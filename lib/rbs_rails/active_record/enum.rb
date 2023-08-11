@@ -3,21 +3,16 @@ module RbsRails
     class Enum
       attr_reader :ast
 
-      IGNORED_ENUM_KEYS = %i[_prefix _suffix _default _scopes]
+      ENUM_OPTIONS = %i[_prefix _suffix _default _scopes]
 
       def initialize(ast)
         @ast = ast
       end
 
       def methods
-        definitions.flat_map do |hash|
-          hash.flat_map do |name, values|
-            # @type block: nil | Array[String]
-            next if IGNORED_ENUM_KEYS.include?(name)
-
-            values.keys.map do |label|
-              method_name(hash, name, label)
-            end
+        definitions.flat_map do |name, values, options|
+          values.keys.map do |label|
+            method_name(options, name, label)
           end
         end.compact
       end
@@ -46,8 +41,8 @@ module RbsRails
       private def definitions
         return [] unless ast
 
-        traverse(ast).map do |node|
-          # @type block: nil | Hash[untyped, untyped]
+        traverse(ast).flat_map do |node|
+          # @type block: nil | Array[Array[[untyped, untyped, untyped]]]
           next unless node.type == :send
           next unless node.children[0].nil?
           next unless node.children[1] == :enum
@@ -57,7 +52,9 @@ module RbsRails
           next unless definitions.type == :hash
           next unless traverse(definitions).all? { |n| [:str, :sym, :int, :hash, :pair, :true, :false].include?(n.type) }
 
-          evaluate(definitions)
+          enums = evaluate(definitions)
+          options = enums.select { |k, _| ENUM_OPTIONS.include?(k) }
+          enums.reject { |k, _| ENUM_OPTIONS.include?(k) }.map { |k, v| [k, v, options] }
         end.compact
       end
 

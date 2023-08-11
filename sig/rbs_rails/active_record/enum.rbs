@@ -3,7 +3,7 @@ module RbsRails
     class Enum
       attr_reader ast: Parser::AST::Node?
 
-      IGNORED_ENUM_KEYS: Array[Symbol]
+      ENUM_OPTIONS: Array[Symbol]
 
       def initialize: (Parser::AST::Node? ast) -> void
       def methods: () -> Array[String]
@@ -11,7 +11,7 @@ module RbsRails
       private
 
       def method_name: (Hash[untyped, untyped], String, String) -> String
-      def definitions: () -> Array[Hash[untyped, untyped]]
+      def definitions: () -> Array[[untyped, Hash[untyped, untyped], Hash[untyped, untyped]]]
       def traverse: (Parser::AST::Node node) { (Parser::AST::Node) -> untyped } -> untyped
                   | (Parser::AST::Node node) -> Enumerator[Parser::AST::Node, untyped]
       def evaluate: (Parser::AST::Node node) -> untyped
