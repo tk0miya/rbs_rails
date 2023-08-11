@@ -57,9 +57,7 @@ module RbsRails
           next unless definitions.type == :hash
           next unless traverse(definitions).all? { |n| [:str, :sym, :int, :hash, :pair, :true, :false].include?(n.type) }
 
-          code = definitions.loc.expression.source
-          code = "{#{code}}" if code[0] != '{'
-          eval(code)
+          evaluate(definitions)
         end.compact
       end
 
@@ -69,6 +67,23 @@ module RbsRails
         block.call node
         node.children.each do |child|
           traverse(child, &block) if child.is_a?(Parser::AST::Node)
+        end
+      end
+
+      private def evaluate(node)
+        case node.type
+        when :int, :str, :sym
+          node.children.first
+        when :true
+          true
+        when :false
+          false
+        when :hash
+          node.children.to_h { |child| evaluate(child) }
+        when :pair
+          node.children.map { |child| evaluate(child) }
+        else
+          node
         end
       end
     end

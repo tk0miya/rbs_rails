@@ -14,6 +14,7 @@ module RbsRails
       def definitions: () -> Array[Hash[untyped, untyped]]
       def traverse: (Parser::AST::Node node) { (Parser::AST::Node) -> untyped } -> untyped
                   | (Parser::AST::Node node) -> Enumerator[Parser::AST::Node, untyped]
+      def evaluate: (Parser::AST::Node node) -> untyped
     end
   end
 end
