@@ -2,11 +2,13 @@ module RbsRails
   module ActiveRecord
     class Enum
       attr_reader :ast
+      attr_reader :rails_version
 
       ENUM_OPTIONS = %i[_prefix _suffix _default _scopes]
 
-      def initialize(ast)
+      def initialize(ast, rails_version:)
         @ast = ast
+        @rails_version = rails_version
       end
 
       def methods
@@ -18,8 +20,8 @@ module RbsRails
       end
 
       private def method_name(hash, name, label)
-        enum_prefix = hash[:_prefix]
-        enum_suffix = hash[:_suffix]
+        enum_prefix = hash[:_prefix] || hash[:prefix]
+        enum_suffix = hash[:_suffix] || hash[:suffix]
 
         if enum_prefix == true
           prefix = "#{name}_"
@@ -42,19 +44,31 @@ module RbsRails
         return [] unless ast
 
         traverse(ast).flat_map do |node|
-          # @type block: nil | Array[Array[[untyped, untyped, untyped]]]
+          # @type block: nil | Array[[untyped, untyped, untyped]]
           next unless node.type == :send
           next unless node.children[0].nil?
           next unless node.children[1] == :enum
 
           definitions = node.children[2]
           next unless definitions
-          next unless definitions.type == :hash
-          next unless traverse(definitions).all? { |n| [:str, :sym, :int, :hash, :pair, :true, :false].include?(n.type) }
+          if rails_version < 7
+            next unless definitions.type == :hash
+            next unless traverse(definitions).all? { |n| [:str, :sym, :int, :hash, :pair, :true, :false].include?(n.type) }
 
-          enums = evaluate(definitions)
-          options = enums.select { |k, _| ENUM_OPTIONS.include?(k) }
-          enums.reject { |k, _| ENUM_OPTIONS.include?(k) }.map { |k, v| [k, v, options] }
+            enums = evaluate(definitions)
+            options = enums.select { |k, _| ENUM_OPTIONS.include?(k) }
+            enums.reject { |k, _| ENUM_OPTIONS.include?(k) }.map { |k, v| [k, v, options] }
+          else
+            args = node.children[2...].to_a.map { |arg| evaluate(arg) }
+            case args.first
+            when Symbol
+              name, values, options = args
+            else
+              name = nil
+              values, options = args
+            end
+            [[name, values, options.to_h]]
+          end
         end.compact
       end
 

@@ -329,7 +329,7 @@ module RbsRails
       end
 
       private def enum_definitions
-        @enum_definitions ||= Enum.new(parse_model_file)
+        @enum_definitions ||= Enum.new(parse_model_file, rails_version: Rails::VERSION::MAJOR)
       end
 
       private def scopes(singleton:)

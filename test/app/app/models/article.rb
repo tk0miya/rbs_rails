@@ -1,6 +1,8 @@
 class Article < ApplicationRecord
   belongs_to :blog
+  has_many :comments
 
+  # Rails5 style enum
   enum status: {
     draft: 1,
     published: 2

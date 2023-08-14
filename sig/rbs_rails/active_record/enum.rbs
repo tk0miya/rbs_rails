@@ -2,16 +2,17 @@ module RbsRails
   module ActiveRecord
     class Enum
       attr_reader ast: Parser::AST::Node?
+      attr_reader rails_version: Integer
 
       ENUM_OPTIONS: Array[Symbol]
 
-      def initialize: (Parser::AST::Node? ast) -> void
+      def initialize: (Parser::AST::Node? ast, rails_version: Integer) -> void
       def methods: () -> Array[String]
 
       private
 
       def method_name: (Hash[untyped, untyped], String, String) -> String
-      def definitions: () -> Array[[untyped, Hash[untyped, untyped], Hash[untyped, untyped]]]
+      def definitions: () -> Array[[untyped, untyped, untyped]]
       def traverse: (Parser::AST::Node node) { (Parser::AST::Node) -> untyped } -> untyped
                   | (Parser::AST::Node node) -> Enumerator[Parser::AST::Node, untyped]
       def evaluate: (Parser::AST::Node node) -> untyped
