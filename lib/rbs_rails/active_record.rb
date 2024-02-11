@@ -30,7 +30,7 @@ module RbsRails
       private def klass_decl
         <<~RBS
           #{header}
-            extend ::_ActiveRecord_Relation_ClassMethods[#{klass_name}, #{relation_class_name}, #{pk_type}]
+            extend ::ActiveRecord::Relation::ClassMethods[#{klass_name}, #{relation_class_name}, #{pk_type}]
 
           #{columns}
           #{associations}
@@ -74,8 +74,8 @@ module RbsRails
         <<~RBS
           class #{relation_class_name(abs: false)} < ::ActiveRecord::Relation
             include #{generated_relation_methods_name}
-            include ::_ActiveRecord_Relation[#{klass_name}, #{pk_type}]
             include ::Enumerable[#{klass_name}]
+            include ::ActiveRecord::Relation::Methods[#{klass_name}, #{pk_type}]
           end
         RBS
       end
@@ -84,7 +84,7 @@ module RbsRails
         <<~RBS
           class ActiveRecord_Associations_CollectionProxy < ::ActiveRecord::Associations::CollectionProxy
             include #{generated_relation_methods_name}
-            include ::_ActiveRecord_Relation[#{klass_name}, #{pk_type}]
+            include ::ActiveRecord::Relation::Methods[#{klass_name}, #{pk_type}]
           end
         RBS
       end

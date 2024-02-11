@@ -1,5 +1,5 @@
 class User < ::ApplicationRecord
-  extend ::_ActiveRecord_Relation_ClassMethods[::User, ::User::ActiveRecord_Relation, ::Integer]
+  extend ::ActiveRecord::Relation::ClassMethods[::User, ::User::ActiveRecord_Relation, ::Integer]
 
   module GeneratedAttributeMethods
     def id: () -> ::Integer
@@ -245,12 +245,12 @@ class User < ::ApplicationRecord
 
   class ActiveRecord_Relation < ::ActiveRecord::Relation
     include ::User::GeneratedRelationMethods
-    include ::_ActiveRecord_Relation[::User, ::Integer]
     include ::Enumerable[::User]
+    include ::ActiveRecord::Relation::Methods[::User, ::Integer]
   end
 
   class ActiveRecord_Associations_CollectionProxy < ::ActiveRecord::Associations::CollectionProxy
     include ::User::GeneratedRelationMethods
-    include ::_ActiveRecord_Relation[::User, ::Integer]
+    include ::ActiveRecord::Relation::Methods[::User, ::Integer]
   end
 end
