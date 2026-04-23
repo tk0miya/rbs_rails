@@ -43,6 +43,11 @@ $ bundle exec rbs_rails models
 
 # Generate RBS files for path helpers
 $ bundle exec rbs_rails path_helpers
+
+# Generate RBS files for specified file(s) (auto-detects file type)
+$ bundle exec rbs_rails generate app/models/user.rb
+$ bundle exec rbs_rails generate app/models/user.rb app/models/post.rb
+$ bundle exec rbs_rails generate config/routes.rb
 ```
 
 ### Install RBS for `rails` gem

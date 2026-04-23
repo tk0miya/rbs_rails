@@ -30,6 +30,18 @@ module RbsRails
       generate_models
     end
 
+    desc "generate FILES...", "Generate RBS files for specified file(s) (auto-detects file type)"
+    def generate(*files) #: void
+      if files.empty?
+        say_error "Error: generate subcommand requires at least one file argument"
+        exit 1
+      end
+      apply_options
+      load_application
+      load_config
+      generate_files(files)
+    end
+
     desc "path_helpers", "Generate RBS for Rails path helpers"
     def path_helpers #: void
       apply_options
@@ -95,6 +107,49 @@ module RbsRails
         puts "Error generating RBS for #{klass.name} model"
         raise e
       end
+    end
+
+    # @rbs files: Array[String]
+    def generate_files(files) #: void
+      check_db_migrations!
+
+      files.each do |file|
+        abs_path = File.expand_path(file)
+        case guess_file_type(abs_path)
+        when :model  then generate_model_from_file(abs_path)
+        when :routes then generate_path_helpers
+        end
+      end
+    end
+
+    def guess_file_type(abs_path) #: (:model | :routes)?
+      # Step 1: Zeitwerk でクラスを解決し、継承ツリーから判断
+      const_name = zeitwerk_const_name(abs_path)
+      if const_name
+        klass = const_name.constantize
+        return :model if klass.is_a?(Class) && klass < ::ActiveRecord::Base
+        return nil
+      end
+
+      # Step 2: Zeitwerk が関知しないファイルをパターンで補う
+      :routes if abs_path.match?(%r{/config/routes(/.*)?\.rb$})
+    rescue NameError
+      nil
+    end
+
+    def zeitwerk_const_name(abs_path) #: String?
+      Rails.autoloaders.main.cpath_expected_at(abs_path)
+    rescue
+      nil
+    end
+
+    def generate_model_from_file(abs_path) #: void
+      const_name = zeitwerk_const_name(abs_path)
+      klass = const_name.constantize  # steep:ignore
+      generate_single_model(klass)
+    rescue => e
+      puts "Error generating RBS for #{klass&.name} model"
+      raise e
     end
 
     # Raise an error if database is not migrated to the latest version

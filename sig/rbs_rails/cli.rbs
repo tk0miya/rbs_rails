@@ -11,6 +11,8 @@ module RbsRails
 
     def models: () -> void
 
+    def generate: (*String files) -> void
+
     def path_helpers: () -> void
 
     def version: () -> void
@@ -28,6 +30,14 @@ module RbsRails
     def install_hooks: () -> void
 
     def generate_models: () -> void
+
+    def generate_files: (Array[String] files) -> void
+
+    def guess_file_type: (String abs_path) -> (:model | :routes)?
+
+    def zeitwerk_const_name: (String abs_path) -> String?
+
+    def generate_model_from_file: (String abs_path) -> void
 
     # Raise an error if database is not migrated to the latest version
     def check_db_migrations!: () -> void
